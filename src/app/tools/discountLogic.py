@@ -5,14 +5,18 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from opentelemetry import trace
-from azure.monitor.opentelemetry import configure_azure_monitor
+try:
+    from azure.monitor.opentelemetry import configure_azure_monitor  # optional dependency
+except ImportError:  # pragma: no cover - best effort optional telemetry
+    configure_azure_monitor = None  # type: ignore
 from azure.ai.agents.telemetry import trace_function
 import time
 # from opentelemetry.instrumentation.openai_v2 import OpenAIInstrumentor
 
 # Enable Azure Monitor tracing
-application_insights_connection_string = os.environ["APPLICATIONINSIGHTS_CONNECTION_STRING"]
-# configure_azure_monitor(connection_string=application_insights_connection_string)
+application_insights_connection_string = os.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING")
+if configure_azure_monitor and application_insights_connection_string:
+    configure_azure_monitor(connection_string=application_insights_connection_string)
 # OpenAIInstrumentor().instrument()
 
 # scenario = os.path.basename(__file__)
